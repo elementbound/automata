@@ -4,6 +4,8 @@
 #include <algorithm> //shuffle
 #include <cstdlib> //atoi
 
+const unsigned buffer_size = 8192;
+
 class permute_coder
 {
 	private: 
@@ -48,6 +50,7 @@ int main(int argc, char** argv)
 	std::string password = argv[3];
 	
 	permute_coder states[state_count];
+	unsigned current_state = 0;
 	
 	unsigned pass_pos = 0;
 	for(unsigned i=0; i<state_count; i++)
@@ -61,6 +64,34 @@ int main(int argc, char** argv)
 		
 		std::cout << "Seed#" << i << ": " << seed << std::endl;
 		states[i].seed(seed);
+	}
+	
+	unsigned char buffer[buffer_size];
+	while(std::cin.good())
+	{
+		std::cin.read((char*)buffer, buffer_size);
+		unsigned read_count = std::cin.gcount();
+		
+		for(unsigned i=0; i<read_count; i++)
+		{
+			if(mode == "en")
+			{
+				char c = buffer[i];
+				char enc = states[current_state].encode(c);
+				std::cout.put(enc);
+				
+				current_state = (current_state + c) % state_count;
+			}
+			
+			if(mode == "de")
+			{
+				char c = buffer[i];
+				char dec = states[current_state].decode(c);
+				std::cout.put(dec);
+				
+				current_state = (current_state + dec) % state_count;
+			}
+		}
 	}
 	
 	return 0;

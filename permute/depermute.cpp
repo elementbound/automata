@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 	
 	unsigned char signal_table[256];
 	for(unsigned i=0; i<256; i++)
-		signal_table[i] = shuffled_charset[i];
+		signal_table[shuffled_charset[i]] = i;
 	
 	unsigned char buffer[buffer_size];
 	while(std::cin.good())

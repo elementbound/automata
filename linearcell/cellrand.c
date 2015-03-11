@@ -1,6 +1,17 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 typedef unsigned char byte_t;
+
+const char* to_binary(byte_t val)
+{
+	static char str[8];
+	for(unsigned j=0; j<8; j++)
+		str[j] = (val & (1<<j)) ? '1' : '0';
+	
+	return str;
+}
 
 int get_bit(char* data, size_t size, int pos)
 {
@@ -15,31 +26,63 @@ int get_bit(char* data, size_t size, int pos)
 	return (data[byte_id] >> bit_id) & 1;
 }
 
+void set_bit(char* data, size_t size, int pos, int value)
+{
+	if(pos < 0)
+		return; 
+	if(pos >= size*8)
+		return;
+	
+	int byte_id = pos/8;
+	int bit_id = pos%8;
+	
+	data[byte_id] &= ~(1<<bit_id);
+	data[byte_id] |= (value?1:0) << bit_id;
+}
+
 void cellrand(void* data, size_t size, byte_t automata)
 {
 	char* buffer = (char*)data;
+	char* swap = malloc(size);
 	byte_t result_byte;
-	for(size_t i=0; i<size; i++)
-	{	
-		result_byte = 0;
-		
-		for(size_t j=0; j<8; j++)
+	
+	memset(data, 0, size);
+	memset(swap, 0, size);
+	set_bit(data, size, size*4, 1);
+	
+	for(size_t iter = size*8; iter; iter--)
+	{
+		for(size_t i=0; i<size; i++)
 		{
-			byte_t current_state = get_bit(buffer, size, i*8+j-1) | (get_bit(buffer, size, i*8+j) << 1) | (get_bit(buffer, size, i*i+j+1) << 2);
-			result_byte |= ((automata >> current_state) & 1) << j;
+			byte_t result_byte = buffer[i];
+			
+			for(size_t j=0; j<8; j++)
+			{
+				byte_t current_state = get_bit(buffer, size, i*8+j-1) | (get_bit(buffer, size, i*8+j) << 1) | (get_bit(buffer, size, i*i+j+1) << 2);
+				result_byte |= ((automata >> current_state) & 1) << j;
+			}
+			
+			swap[i] = result_byte;
+			printf("%s ", to_binary(buffer[i]));
 		}
 		
-		buffer[i] = result_byte;
+		char* t = swap;
+		swap = buffer;
+		buffer = swap;
+	
+		printf("\n");
 	}
 }
 
 int main()
 {
-	unsigned x[4] = {324, 846, 453, 489};
+	unsigned x[1] = {};
 	for(unsigned n = 128; n; n--)
 	{
-		printf("%u %u %u %u\n", x[0], x[1], x[2], x[3]);
-		cellrand(&x, 4*sizeof(unsigned), 30);
+		cellrand(&x, 1*sizeof(unsigned), 30);
+		printf("%u\n", x[0]);
+		
+		break;
 	}
 	
 	return 0;

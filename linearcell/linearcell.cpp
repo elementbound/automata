@@ -1,26 +1,46 @@
 #include <iostream>
 #include <map>
+#include <cstdlib> //atoi
 
 typedef unsigned char byte_t;
 typedef signed long pos_t; 
 
-int main()
+int main(int argc, char** argv)
 {
 	byte_t automata = 30;
-	std::map<pos_t, bool> universe;
-
-	universe.insert({0, 1});
-	for(pos_t i = universe.begin()->first - 1; 
-		i < universe.rbegin()->first + 1;
-		i++ )
+	unsigned iter_count = 24;
+	
+	if(argc > 1)
+		automata = atoi(argv[1]);
+	
+	if(argc > 2)
+		iter_count = atoi(argv[2]);
+	
+	std::map<pos_t, bool> universe[2];
+	universe[0].insert({0, 1});
+	
+	unsigned n = 16;
+	for(unsigned iteration=iter_count; iteration; iteration--)
 	{
-		byte_t state = 0;
+		std::pair<pos_t, pos_t> bounds;
+			bounds.first  = universe[0].begin()->first - 1;
+			bounds.second = universe[0].rbegin()->first + 1;
+			
+		for(pos_t i = bounds.first; i <= bounds.second; i++ )
+		{
+			byte_t state = 0;
+			
+			state |= universe[0][i-1];
+			state |= universe[0][i  ] << 1;
+			state |= universe[0][i+1] << 2;
+			
+			universe[1][i] = (automata & ( 1 << state )) != 0;
+			
+			std::cout << universe[1][i];
+		}
 		
-		//This thing is so ugly I'm enjoying it
-		std::map<pos_t, bool>::iterator it;
-		state |= ((it = universe.find(i-1)) != universe.end()) ? it->second : 0;
-		state |= (((it = universe.find(i  )) != universe.end()) ? it->second : 0) << 1;
-		state |= (((it = universe.find(i+1)) != universe.end()) ? it->second : 0) << 2;
+		universe[0].swap(universe[1]);
+		std::cout << std::endl;
 	}
 	
 	return 0;

@@ -27,7 +27,7 @@
             <kind>1</kind>
             <string>randomize();
 
-pixel_size = 16;
+pixel_size = 1;
 
 width = room_width div pixel_size;
 height = room_height div pixel_size;

@@ -111,7 +111,7 @@ void permute_coder::seed(int val)
 	for(unsigned i=0; i<256; i++)
 		shuffled_charset[i] = i;
 	
-	std::shuffle(shuffled_charset+1, shuffled_charset+256, random_gen);
+	std::shuffle(shuffled_charset+'a', shuffled_charset+'z', random_gen);
 	
 	for(unsigned i=0; i<256; i++)
 	{

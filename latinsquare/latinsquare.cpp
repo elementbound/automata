@@ -1,7 +1,10 @@
 #include <iostream>
-#include <algorithm> //random_shuffle
+#include <algorithm> //std::shuffle, std::swap
 #include <vector>
 #include <utility> //std::pair
+#include <random>
+#include <chrono> //std::system_clock::now
+#include <cstdlib> //atoi
 
 class matrix
 {
@@ -57,8 +60,15 @@ class latin_square
 		
 		void generate(unsigned s)
 		{
+			this->generate(s, std::default_random_engine());
+		}
+		
+		template <typename RNG> 
+		void generate(unsigned s, RNG rng)
+		{
 			m_Matrix.resize(s,s);
 			m_ValueSet.resize(s);
+			
 			std::generate(m_ValueSet.begin(), m_ValueSet.end(), 
 				[]() -> unsigned {
 					static unsigned i=0;
@@ -68,7 +78,7 @@ class latin_square
 			for(unsigned column = 0; column < s; column++)
 			{
 				//Generate a random column
-				std::random_shuffle(m_ValueSet.begin(), m_ValueSet.end());
+				std::shuffle(m_ValueSet.begin(), m_ValueSet.end(), rng);
 				
 				//Copy into the matrix
 				for(unsigned row = 0; row < s; row++)
@@ -104,10 +114,12 @@ class latin_square
 					while(!collision_resolved)
 					{
 						std::next_permutation(m_ValueSet.begin(), m_ValueSet.end());
+						collision_resolved = 1;
+						
 						for(unsigned row=0; row<s; row++)
-							if(!check_row_collision(column, row, m_ValueSet[row]).first)
+							if(check_row_collision(column, row, m_ValueSet[row]).first)
 							{
-								collision_resolved = 1;
+								collision_resolved = 0;
 								break;
 							}
 							
@@ -121,12 +133,16 @@ class latin_square
 		}
 };
 
-int main()
+int main(int argc, char** argv)
 {
-	unsigned size = 10;
+	unsigned size = (argc>1) ? atoi(argv[1]) : 10;
+	unsigned seed = (argc>2) ? atoi(argv[2]) : std::chrono::system_clock::now().time_since_epoch().count();
+	
+	std::mt19937 rng;
+	rng.seed(seed);
 	
 	latin_square sqr;
-	sqr.generate(size);
+	sqr.generate(size, rng);
 	sqr.print();
 	
 	return 0;

@@ -53,7 +53,10 @@ class latin_square
 			for(unsigned y=0; y<m_Matrix.height(); y++)
 			{
 				for(unsigned x=0; x<m_Matrix.width(); x++)
+				{
+					std::cout.width(3);
 					std::cout << m_Matrix(x,y) << ' ';
+				}
 				std::cout << '\n';
 			}
 		}
@@ -68,68 +71,31 @@ class latin_square
 		{
 			m_Matrix.resize(s,s);
 			m_ValueSet.resize(s);
+			std::uniform_int_distribution<unsigned> udr(0, s-1);
 			
 			std::generate(m_ValueSet.begin(), m_ValueSet.end(), 
 				[]() -> unsigned {
 					static unsigned i=0;
 					return i++;
 				});
+			
+			for(unsigned y=0; y<s; y++)
+				for(unsigned x=0; x<s; x++)
+					m_Matrix(x,y) = (x+y)%s;
 				
-			for(unsigned column = 0; column < s; column++)
+			//Shuffle rows 
+			for(unsigned y=s-1; y>0; y--)
 			{
-				//Generate a random column
-				std::shuffle(m_ValueSet.begin(), m_ValueSet.end(), rng);
-				
-				//Copy into the matrix
-				for(unsigned row = 0; row < s; row++)
-					m_Matrix(column, row) = m_ValueSet[row];
-				
-				//Check for collisions, if necessary 
-				if(column == 0)
-					continue;
-				
-				for(unsigned row=0; row<s; row++)
-				{
-					std::pair<bool, unsigned> collision = check_row_collision(column, row, m_Matrix(column, row));
-					if(!collision.first) continue; //No collision 
-					bool collision_resolved = 0;
-					
-					//Found a collision, now find a row where we can swap the last values 
-					//to resolve the collision
-					for(unsigned swap_row=0; swap_row<s; swap_row++)
-					{
-						if(check_row_collision(column, row, m_Matrix(column, swap_row)).first)
-							continue; 
-						
-						if(check_row_collision(column, swap_row, m_Matrix(column, row)).first)
-							continue;
-						
-						//Found a swap, great! 
-						std::swap(m_Matrix(column, swap_row), m_Matrix(column, row));
-						collision_resolved = 1;
-						break;
-					}
-					
-					//If no swap was found, fall back to permutations 
-					while(!collision_resolved)
-					{
-						std::next_permutation(m_ValueSet.begin(), m_ValueSet.end());
-						collision_resolved = 1;
-						
-						for(unsigned row=0; row<s; row++)
-							if(check_row_collision(column, row, m_ValueSet[row]).first)
-							{
-								collision_resolved = 0;
-								break;
-							}
-							
-						//Copy into column
-						if(collision_resolved) 
-							for(unsigned row = 0; row < s; row++)
-								m_Matrix(column, row) = m_ValueSet[row];
-					}
-				}
+				unsigned swap_row = udr(rng) % y;
+				for(unsigned x=0; x<s; x++)
+					std::swap(m_Matrix(x,y), m_Matrix(x,swap_row));
 			}
+			
+			//Randomly remap values
+			std::shuffle(m_ValueSet.begin(), m_ValueSet.end(), rng);
+			for(unsigned y=0; y<s; y++)
+				for(unsigned x=0; x<s; x++)
+					m_Matrix(x,y) = m_ValueSet[m_Matrix(x,y)];
 		}
 };
 
@@ -137,10 +103,12 @@ int main(int argc, char** argv)
 {
 	unsigned size = (argc>1) ? atoi(argv[1]) : 10;
 	unsigned seed = (argc>2) ? atoi(argv[2]) : std::chrono::system_clock::now().time_since_epoch().count();
+	unsigned test_count = 8;
 	
 	std::mt19937 rng;
 	rng.seed(seed);
 	
+	std::cout << "A sample latinsquare(" << size << ")" << std::endl;
 	latin_square sqr;
 	sqr.generate(size, rng);
 	sqr.print();

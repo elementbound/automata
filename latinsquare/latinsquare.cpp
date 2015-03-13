@@ -14,6 +14,8 @@ class matrix
 		unsigned m_Height;
 		
 	public: 
+		typedef std::vector<unsigned>::iterator iterator;
+	
 		void resize(unsigned w, unsigned h)
 		{
 			m_Width = w;
@@ -28,6 +30,9 @@ class matrix
 		
 		unsigned width() const { return m_Width; }
 		unsigned height() const { return m_Height; }
+		
+		iterator begin() { return m_Data.begin(); }
+		iterator end() { return m_Data.end(); }
 };
 
 class latin_square
@@ -35,17 +40,6 @@ class latin_square
 	private: 
 		matrix 					m_Matrix;
 		std::vector<unsigned> 	m_ValueSet;
-		
-		std::pair<bool, unsigned> check_row_collision(unsigned x, unsigned y, unsigned value)
-		{
-			for(unsigned cx = 0; cx < x; cx++)
-			{
-				if(m_Matrix(cx,y) == value)
-					return {true, cx};
-			}
-			
-			return {false, 0};
-		}
 		
 	public: 
 		void print()
@@ -93,9 +87,11 @@ class latin_square
 			
 			//Randomly remap values
 			std::shuffle(m_ValueSet.begin(), m_ValueSet.end(), rng);
-			for(unsigned y=0; y<s; y++)
-				for(unsigned x=0; x<s; x++)
-					m_Matrix(x,y) = m_ValueSet[m_Matrix(x,y)];
+			std::transform(m_Matrix.begin(), m_Matrix.end(), m_Matrix.begin(), 
+				[&, this] (unsigned i) -> unsigned {
+					return this->m_ValueSet[i];
+				}
+			);
 		}
 		
 		matrix& operator()(){return m_Matrix;}

@@ -51,9 +51,9 @@ grid generate_latin_square(unsigned s, RNG rng){
 	value_set.resize(s);
 	std::uniform_int_distribution<unsigned> udr(0, s-1);
 	
+	unsigned i = 0;
 	std::generate(value_set.begin(), value_set.end(), 
-		[]() -> unsigned {
-			static unsigned i=0;
+		[&, i]() mutable -> unsigned {
 			return i++;
 		});
 	

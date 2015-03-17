@@ -2,6 +2,9 @@
 #include <random>
 #include "grid.h"
 
+#define DEBUG(txt) (std::cerr << txt);
+//#define DEBUG(txt) 
+
 int main(int argc, char** argv)
 {
 	unsigned seed = 8;
@@ -10,20 +13,20 @@ int main(int argc, char** argv)
 	unsigned automata_state = 0;
 	std::mt19937 rng;
 	
+	DEBUG("Generating automata... ");
 	rng.seed(seed);
 	automata_transitions = generate_latin_square(256, rng);
 	automata_outputs 	 = generate_latin_square(256, rng);
+	DEBUG("done\n");
 	
-	while(1)
+	while(std::cin.good())
 	{
 		int c = 0;
 		c = std::cin.get();
 		
-		if( c == EOF) 
-			break;
-		
 		//Do a reverse lookup
 		for(unsigned y=0; y<256; y++)
+		{
 			if(automata_outputs(automata_state, y) == c)
 			{
 				std::cout << (char)y;
@@ -31,6 +34,10 @@ int main(int argc, char** argv)
 				
 				break;
 			}
+			
+			if(y == 255)
+				std::cerr << "No matching character found for " << c << "!\n";
+		}
 	}
 	
 	return 0;

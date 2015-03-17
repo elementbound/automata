@@ -6,54 +6,15 @@
 #include <chrono> //std::system_clock::now
 #include <cstdlib> //atoi
 
-class matrix
-{
-	private: 
-		std::vector<unsigned> m_Data;
-		unsigned m_Width;
-		unsigned m_Height;
-		
-	public: 
-		typedef std::vector<unsigned>::iterator iterator;
-	
-		void resize(unsigned w, unsigned h)
-		{
-			m_Width = w;
-			m_Height = h;
-			m_Data.resize(m_Width*m_Height);
-		}
-		
-		unsigned& operator()(unsigned x, unsigned y)
-		{
-			return m_Data[y*m_Width + x];
-		}
-		
-		unsigned width() const { return m_Width; }
-		unsigned height() const { return m_Height; }
-		
-		iterator begin() { return m_Data.begin(); }
-		iterator end() { return m_Data.end(); }
-};
-
-std::ostream& operator<<(std::ostream& os, matrix& m)
-{
-	for(unsigned y=0; y<m.height(); y++)
-	{
-		for(unsigned x=0; x<m.width(); x++)
-			os << m(x,y) << ' ';
-		os << '\n';
-	}
-
-	return os;
-}
+#include "grid.h"
 
 template <typename RNG> 
-matrix generate_latin_square(unsigned s, RNG rng)
+grid generate_latin_square(unsigned s, RNG rng)
 {
-	matrix retMatrix;
+	grid retgrid;
 	std::vector<unsigned> value_set;
 	
-	retMatrix.resize(s,s);
+	retgrid.resize(s,s);
 	value_set.resize(s);
 	std::uniform_int_distribution<unsigned> udr(0, s-1);
 	
@@ -65,28 +26,28 @@ matrix generate_latin_square(unsigned s, RNG rng)
 	
 	for(unsigned y=0; y<s; y++)
 		for(unsigned x=0; x<s; x++)
-			retMatrix(x,y) = (x+y)%s;
+			retgrid(x,y) = (x+y)%s;
 		
 	//Shuffle rows 
 	for(unsigned y=s-1; y>0; y--)
 	{
 		unsigned swap_row = udr(rng) % y;
 		for(unsigned x=0; x<s; x++)
-			std::swap(retMatrix(x,y), retMatrix(x,swap_row));
+			std::swap(retgrid(x,y), retgrid(x,swap_row));
 	}
 	
 	//Randomly remap values
 	std::shuffle(value_set.begin(), value_set.end(), rng);
-	std::transform(retMatrix.begin(), retMatrix.end(), retMatrix.begin(), 
+	std::transform(retgrid.begin(), retgrid.end(), retgrid.begin(), 
 		[&, value_set] (unsigned i) -> unsigned {
 			return value_set[i];
 		}
 	);
 	
-	return retMatrix;
+	return retgrid;
 }
 
-matrix generate_latin_square(unsigned s)
+grid generate_latin_square(unsigned s)
 {
 	return generate_latin_square(s, std::default_random_engine());
 }
@@ -100,7 +61,7 @@ int main(int argc, char** argv)
 	
 	std::mt19937 rng;
 	rng.seed(seed);
-	matrix sqr;
+	grid sqr;
 
 	if(size < 32)
 	{

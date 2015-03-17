@@ -2,8 +2,8 @@
 #include <random>
 #include "grid.h"
 
-#define DEBUG(txt) (std::cerr << txt);
-//#define DEBUG(txt) 
+//#define DEBUG(txt) (std::cerr << txt);
+#define DEBUG(txt) 
 
 int main(int argc, char** argv)
 {
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
 	const unsigned buffer_size = 8192;
 	unsigned char* buffer = new unsigned char[buffer_size];
 	
-	while(std::cin.good())
+	while(1)
 	{
 		std::cin.read((char*)buffer, buffer_size);
 		for(unsigned i=0; i<std::cin.gcount(); i++)
@@ -43,6 +43,12 @@ int main(int argc, char** argv)
 				if(y == 255)
 					std::cerr << "No matching character found for " << c << "!\n";
 			}
+		}
+		
+		if(!std::cin.good())
+		{
+			DEBUG("Stopping because std::cin ain't good");
+			break;
 		}
 	}
 	

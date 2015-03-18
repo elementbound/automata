@@ -62,7 +62,6 @@ int main(int argc, char** argv)
 			pass_pos = (pass_pos+1)%password.length();
 		}
 		
-		std::cout << "Seed#" << i << ": " << seed << std::endl;
 		states[i].seed(seed);
 	}
 	

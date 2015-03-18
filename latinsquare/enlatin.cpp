@@ -44,9 +44,11 @@ int main(int argc, char** argv)
 		{
 			unsigned char c = buffer[i];
 			
-			fos << (char)automata_outputs(automata_state, c);
+			buffer[i] = (char)automata_outputs(automata_state, c);
 			automata_state = automata_transitions(automata_state, c);
 		}
+		
+		fos.write((char*)buffer, fis.gcount());
 	}
 	
 	delete [] buffer;

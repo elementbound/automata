@@ -56,9 +56,12 @@ int main(int argc, char** argv)
 		{
 			int c = buffer[i];
 			int d = reverse_lookup_table(automata_state, c);
-			fos << (char)d;
+			buffer[i] = d;
+			
 			automata_state = automata_transitions(automata_state, d);
 		}
+		
+		fos.write((char*)buffer, fis.gcount());
 	}
 	
 	delete [] buffer;

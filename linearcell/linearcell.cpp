@@ -16,10 +16,11 @@ int main(int argc, char** argv)
 	if(argc > 2)
 		iter_count = atoi(argv[2]);
 	
+	iter_count = 32;
+	
 	std::map<pos_t, bool> universe[2];
 	universe[0].insert({0, 1});
 	
-	unsigned n = 16;
 	for(unsigned iteration=iter_count; iteration; iteration--)
 	{
 		std::pair<pos_t, pos_t> bounds;
@@ -36,12 +37,18 @@ int main(int argc, char** argv)
 			
 			universe[1][i] = (automata & ( 1 << state )) != 0;
 			
-			std::cout << universe[1][i];
+			//std::cout << universe[1][i];
 		}
 		
 		universe[0].swap(universe[1]);
-		std::cout << std::endl;
+		//std::cout << std::endl;
 	}
+	
+	unsigned val = 0;
+	for(unsigned i=0; i<32; i++)
+		val = (val << 1) | universe[0][i];
+	
+	std::cout << val << std::endl;
 	
 	return 0;
 }

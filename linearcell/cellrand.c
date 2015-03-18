@@ -50,7 +50,10 @@ void cellrand(void* data, size_t size, byte_t automata)
 	memset(swap, 0, size);
 	set_bit(data, size, size*4, 1);
 	
-	for(size_t iter = size*8; iter; iter--)
+	unsigned bounds_min = size*4 - 1;
+	unsigned bounds_max = size*4 + 1;
+	
+	while(1)
 	{
 		for(size_t i=0; i<size; i++)
 		{
@@ -58,6 +61,12 @@ void cellrand(void* data, size_t size, byte_t automata)
 			
 			for(size_t j=0; j<8; j++)
 			{
+				if(i*8 + j < bounds_min)
+					continue;
+				
+				if(i*8 +j > bounds_max)
+					continue;
+				
 				byte_t current_state = get_bit(buffer, size, i*8+j-1) | (get_bit(buffer, size, i*8+j) << 1) | (get_bit(buffer, size, i*i+j+1) << 2);
 				result_byte |= ((automata >> current_state) & 1) << j;
 			}
@@ -71,16 +80,21 @@ void cellrand(void* data, size_t size, byte_t automata)
 		buffer = swap;
 	
 		printf("\n");
+		
+		if(bounds_min == 0)
+			break;
+		
+		bounds_min--; bounds_max++;
 	}
 }
 
 int main()
 {
-	unsigned x[1] = {};
+	unsigned x[4] = {};
 	for(unsigned n = 128; n; n--)
 	{
-		cellrand(&x, 1*sizeof(unsigned), 30);
-		printf("%u\n", x[0]);
+		cellrand(&x, 1*sizeof(unsigned), 37);
+		printf("%u %u %u %u\n", x[0], x[1], x[2], x[3]);
 		
 		break;
 	}

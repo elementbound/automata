@@ -1,31 +1,41 @@
 #include <iostream>
+#include <fstream>
 #include <random>
 #include "grid.h"
 
-//#define DEBUG(txt) (std::cerr << txt);
-#define DEBUG(txt) 
+#define die(msg) {std::cerr << msg << '\n'; return 1;}
 
 int main(int argc, char** argv)
 {
+	if(argc < 2)
+		die("Usage: " << argv[0] << " <input file> <output file>");
+	
 	unsigned seed = 8;
 	grid automata_transitions;
 	grid automata_outputs;
 	unsigned automata_state = 0;
 	std::mt19937 rng;
 	
-	DEBUG("Generating automata... ");
 	rng.seed(seed);
 	automata_transitions = generate_latin_square(256, rng);
 	automata_outputs 	 = generate_latin_square(256, rng);
-	DEBUG("done\n");
 	
 	const unsigned buffer_size = 8192;
 	unsigned char* buffer = new unsigned char[buffer_size];
 	
-	while(1)
+	std::ifstream fis(argv[1], std::ios::binary);
+	std::ofstream fos(argv[2], std::ios::binary | std::ios::trunc);
+	
+	if(!fis.good())
+		die("Couldn't open input file: " << argv[1]);
+	
+	if(!fos.good())
+		die("Couldn't open output file: " << argv[2]);
+	
+	while(fis.good() && fos.good())
 	{
-		std::cin.read((char*)buffer, buffer_size);
-		for(unsigned i=0; i<std::cin.gcount(); i++)
+		fis.read((char*)buffer, buffer_size);
+		for(unsigned i=0; i<fis.gcount(); i++)
 		{
 			int c = buffer[i];
 			
@@ -34,21 +44,12 @@ int main(int argc, char** argv)
 			{
 				if(automata_outputs(automata_state, y) == c)
 				{
-					std::cout << (char)y;
+					fos << (char)y;
 					automata_state = automata_transitions(automata_state, y);
 					
 					break;
 				}
-				
-				if(y == 255)
-					std::cerr << "No matching character found for " << c << "!\n";
 			}
-		}
-		
-		if(!std::cin.good())
-		{
-			DEBUG("Stopping because std::cin ain't good");
-			break;
 		}
 	}
 	

@@ -6,6 +6,32 @@
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
 
+class bitstream
+{
+	private: 
+		std::istream* m_InputStream;
+		std::ostream* m_OutputStream;
+		
+	public: 
+		bitstream(std::istream* is, std::ostream* os);
+		
+		void put(bool bit);
+		bool get();
+		
+		void write(const char* source, unsigned bit_count);
+		void read(const char* source, unsigned bit_count);
+		
+		unsigned gcount();
+		
+		std::istream* istream();
+		const std::istream* istream() const;
+		std::ostream* ostream();
+		const std::ostream* ostream();
+		
+		operator bool();
+		bool operator!();
+}
+
 class automata
 {
 	private: 

@@ -2,9 +2,11 @@
 #include <fstream>
 #include <random>
 #include <cstdlib> //exit
-#include "latinsquare/grid.h"
+#include "automata.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
+
+typedef unsigned char byte_t;
 
 class bitstream
 {
@@ -26,27 +28,10 @@ class bitstream
 		std::istream* istream();
 		const std::istream* istream() const;
 		std::ostream* ostream();
-		const std::ostream* ostream();
+		const std::ostream* ostream() const;
 		
 		operator bool();
 		bool operator!();
-}
-
-class automata
-{
-	private: 
-		unsigned m_State = 0;
-		grid m_Transitions;
-		//Automata output is ignored for this algorithm
-		
-	public: 
-		unsigned state() const;
-		void state(unsigned v);
-		
-		unsigned signal(unsigned s);
-		
-		grid& transitions();
-		const grid& transitions() const;
 };
 
 int main(int argc, char** argv)

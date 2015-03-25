@@ -6,34 +6,6 @@
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
 
-typedef unsigned char byte_t;
-
-class bitstream
-{
-	private: 
-		std::istream* m_InputStream;
-		std::ostream* m_OutputStream;
-		
-	public: 
-		bitstream(std::istream* is, std::ostream* os);
-		
-		void put(bool bit);
-		bool get();
-		
-		void write(const char* source, unsigned bit_count);
-		void read(const char* source, unsigned bit_count);
-		
-		unsigned gcount();
-		
-		std::istream* istream();
-		const std::istream* istream() const;
-		std::ostream* ostream();
-		const std::ostream* ostream() const;
-		
-		operator bool();
-		bool operator!();
-};
-
 int main(int argc, char** argv)
 {
 	if(argc < 3)
@@ -79,7 +51,10 @@ int main(int argc, char** argv)
 	}
 	std::cout << "Done!\n";
 	
-	char* buffer = new char[input_block_size];
+	char* buffer = new char[4];
+	for(unsigned i=0; i<4; i++)
+		buffer[i] = 0;
+	
 	encoder.state(0);
 	
 	while(fis)

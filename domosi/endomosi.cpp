@@ -2,17 +2,22 @@
 #include <fstream>
 #include <random>
 #include <cstdlib> //exit
+#include <cstdint> //uint8_t
 #include "automata.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
+//#define debug(msg) {std::cout << msg;}
+#define debug(msg) {}
+
+typedef uint8_t signal_t;
+typedef uint8_t state_t;
 
 int main(int argc, char** argv)
 {
 	if(argc < 3)
 		die("Usage: " << argv[0] << " <input file> <output file>");
 	
-	unsigned input_block_size = 1; //in bytes
-	unsigned output_block_size = 4; //in steps
+	unsigned output_block_size = 4; //in bytes
 	
 	const char* input_file_name = argv[1];
 	const char* output_file_name = argv[2];
@@ -31,14 +36,15 @@ int main(int argc, char** argv)
 	
 	automata encoder;
 	grid reverse_lookup_table;
-	unsigned signal_count = 1 << (8*input_block_size); // = std::pow(2, 8*input_block_size)
+	unsigned signal_count = 256; //1 << (8*input_block_size); // = std::pow(2, 8*input_block_size)
 	std::mt19937 rng;
 	rng.seed(0);
 	
-	std::cout << "Generating a " << signal_count << " latin square\n";
+	debug("Generating a " << signal_count << " latin square... ");
 	encoder.transitions() = generate_latin_square(signal_count, rng); 
+	debug("Done\n");
 	
-	std::cout << "Generating reverse lookup table... ";
+	debug("Generating reverse lookup table... ")
 	reverse_lookup_table.resize(signal_count,signal_count);
 	for(unsigned x=0; x<signal_count; x++) //current state
 	{
@@ -49,34 +55,35 @@ int main(int argc, char** argv)
 					reverse_lookup_table(x,y) = cy;
 		}
 	}
-	std::cout << "Done!\n";
-	
-	char* buffer = new char[4];
-	for(unsigned i=0; i<4; i++)
-		buffer[i] = 0;
+	debug("Done!\n");
 	
 	encoder.state(0);
 	
-	while(fis)
+	while(1)
 	{
-		fis.read(buffer, input_block_size);
+		signal_t signal;
+		state_t input = fis.get();
 		
-		unsigned signal;
+		//Ran out of bytes, stop encoding
+		if(!fis) 
+			break;
+		
+		debug("Encoding character " << int(input) << std::endl);
+		
 		for(unsigned i=0; i < output_block_size-1; i++)
 		{
 			signal = rng() % signal_count;
 			encoder.signal(signal);
 			
-			//Not really portable, now is it? 
-			fos.write((const char*)&signal, sizeof(signal));
+			debug("\tGot signal#" << int(signal) << ", current state is " << int(encoder.state()) << std::endl);
+			fos.put(signal);
 		}
 		
-		//This is even uglier
-		signal = reverse_lookup_table(encoder.state(), *(unsigned*)buffer);
-		fos.write((const char*)&signal, sizeof(unsigned));
+		signal = reverse_lookup_table(encoder.state(), input);
+		encoder.signal(signal);
+		debug("\tFound signal#" << int(signal) << ", current state is " << int(encoder.state()) << std::endl);
+		fos.put(signal);
 	}
-	
-	delete [] buffer;
 	
 	return 0;
 }

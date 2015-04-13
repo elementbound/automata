@@ -5,3 +5,11 @@ build:
 	g++ -std=c++11 -c -I../ dedomosi.cpp -o bin/dedomosi.o
 	g++ bin/grid.o bin/automata.o bin/endomosi.o -o endomosi
 	g++ bin/grid.o bin/automata.o bin/dedomosi.o -o dedomosi
+	
+test: build
+	endomosi ../lipsum.txt en.txt
+	dedomosi en.txt de.txt
+	
+test_min: build
+	endomosi ../min.txt en.txt
+	dedomosi en.txt de.txt

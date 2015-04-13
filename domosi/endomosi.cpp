@@ -2,22 +2,24 @@
 #include <fstream>
 #include <random>
 #include <cstdlib> //exit
-#include <cstdint> //uint8_t
+#include <cstdint> //uintmax_t
 #include "automata.h"
+#include "bitstream.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
 //#define debug(msg) {std::cout << msg;}
 #define debug(msg) {}
 
-typedef uint8_t signal_t;
-typedef uint8_t state_t;
+typedef uintmax_t signal_t;
+typedef uintmax_t state_t;
 
 int main(int argc, char** argv)
 {
 	if(argc < 3)
 		die("Usage: " << argv[0] << " <input file> <output file>");
 	
-	unsigned output_block_size = 4; //in bytes
+	unsigned block_size = 8; //in bits
+	unsigned code_size = 4; //in steps
 	
 	const char* input_file_name = argv[1];
 	const char* output_file_name = argv[2];
@@ -32,11 +34,14 @@ int main(int argc, char** argv)
 	if(!fos)
 		die("Couldn't open output file: " << output_file_name);
 	
+	ibitstream bis; bis.istream(&fis);
+	obitstream bos; bos.ostream(&fos);
+	
 	//
 	
 	automata encoder;
 	grid reverse_lookup_table;
-	unsigned signal_count = 256; //1 << (8*input_block_size); // = std::pow(2, 8*input_block_size)
+	unsigned signal_count = 1 << (block_size); // = std::pow(2, 8*input_block_size)
 	std::mt19937 rng;
 	rng.seed(0);
 	
@@ -62,7 +67,8 @@ int main(int argc, char** argv)
 	while(1)
 	{
 		signal_t signal;
-		state_t input = fis.get();
+		state_t input;
+			bis.get(input, block_size);
 		
 		//Ran out of bytes, stop encoding
 		if(!fis) 
@@ -70,19 +76,19 @@ int main(int argc, char** argv)
 		
 		debug("Encoding character " << int(input) << std::endl);
 		
-		for(unsigned i=0; i < output_block_size-1; i++)
+		for(unsigned i=0; i < code_size-1; i++)
 		{
 			signal = rng() % signal_count;
 			encoder.signal(signal);
 			
 			debug("\tGot signal#" << int(signal) << ", current state is " << int(encoder.state()) << std::endl);
-			fos.put(signal);
+			bos.put(signal, block_size);
 		}
 		
 		signal = reverse_lookup_table(encoder.state(), input);
 		encoder.signal(signal);
 		debug("\tFound signal#" << int(signal) << ", current state is " << int(encoder.state()) << std::endl);
-		fos.put(signal);
+		bos.put(signal, block_size);
 	}
 	
 	return 0;

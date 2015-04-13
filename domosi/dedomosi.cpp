@@ -2,15 +2,16 @@
 #include <fstream>
 #include <random>
 #include <cstdlib> //exit
-#include <cstdint> //uint8_t
+#include <cstdint> //uintmax_t
 #include "automata.h"
+#include "bitstream.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
 //#define debug(msg) {std::cout << msg;}
 #define debug(msg) {}
 
-typedef uint8_t signal_t;
-typedef uint8_t state_t;
+typedef uintmax_t signal_t;
+typedef uintmax_t state_t;
 
 int main(int argc, char** argv)
 {
@@ -22,7 +23,8 @@ int main(int argc, char** argv)
 	
 	//
 	
-	unsigned input_block_size = 4;
+	unsigned block_size = 8; //in bits
+	unsigned code_size = 4; //in steps
 	
 	//
 	
@@ -33,6 +35,9 @@ int main(int argc, char** argv)
 	std::ofstream fos(output_file_name, std::ios::binary | std::ios::trunc);
 	if(!fos)
 		die("Couldn't open output file: " << output_file_name);
+	
+	ibitstream bis; bis.istream(&fis);
+	obitstream bos; bos.ostream(&fos);
 	
 	//
 	
@@ -50,9 +55,9 @@ int main(int argc, char** argv)
 	{
 		signal_t signal;
 		
-		for(int i=0; i<input_block_size; i++)
+		for(int i=0; i<code_size; i++)
 		{
-			signal = fis.get();
+			bis.get(signal, block_size);
 			encoder.signal(signal);
 		}
 		
@@ -61,7 +66,7 @@ int main(int argc, char** argv)
 		if(!fis) 
 			break;
 		
-		fos.put(encoder.state());
+		bos.put(encoder.state(), block_size);
 	}
 	
 	return 0;

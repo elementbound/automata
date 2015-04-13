@@ -7,8 +7,8 @@
 #include "bitstream.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
-//#define debug(msg) {std::cout << msg;}
-#define debug(msg) {}
+#define debug(msg) {std::cout << msg;}
+//#define debug(msg) {}
 
 typedef uintmax_t signal_t;
 typedef uintmax_t state_t;
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 	
 	//
 	
-	unsigned block_size = 8; //in bits
+	unsigned block_size = 4; //in bits
 	unsigned code_size = 4; //in steps
 	
 	//
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 	//
 	
 	automata encoder;
-	unsigned signal_count = 256; //1 << (8*output_block_size); // = std::pow(2, 8*output_block_size)
+	unsigned signal_count = 1 << block_size; // = std::pow(2, 8*output_block_size)
 	std::mt19937 rng;
 	rng.seed(0);
 	
@@ -54,21 +54,27 @@ int main(int argc, char** argv)
 	while(1)
 	{
 		signal_t signal = 0;
+		debug("Getting " << code_size << " signals\n");
 		
 		for(int i=0; i<code_size; i++)
 		{
 			signal = 0;
 			ibitstream::get(bis, signal, block_size);
 			encoder.signal(signal);
+			
+			debug("\tGot signal " << signal << ", current state is " << encoder.state() << '\n');
 		}
+		
+		debug("\tOutputting " << encoder.state() << '\n');
+		obitstream::put(bos, encoder.state(), block_size);
 		
 		//In the previous loop fis might become invalid; 
 		//stop decoding, ran out of input
 		if(!fis) 
 			break;
-		
-		obitstream::put(bos, encoder.state(), block_size);
 	}
+	
+	bos.flush();
 	
 	return 0;
 }

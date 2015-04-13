@@ -1,4 +1,4 @@
-CXX_FLAGS = -std=c++11 -I../ -ggdb
+CXX_FLAGS = -std=c++11 -I../ 
 
 build: 
 	g++ ${CXX_FLAGS} -c ../latinsquare/grid.cpp -o bin/grid.o

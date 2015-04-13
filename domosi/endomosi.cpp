@@ -7,8 +7,8 @@
 #include "bitstream.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
-//#define debug(msg) {std::cout << msg;}
-#define debug(msg) {}
+#define debug(msg) {std::cout << msg;}
+//#define debug(msg) {}
 
 typedef uintmax_t signal_t;
 typedef uintmax_t state_t;
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 	if(argc < 3)
 		die("Usage: " << argv[0] << " <input file> <output file>");
 	
-	unsigned block_size = 8; //in bits
+	unsigned block_size = 4; //in bits
 	unsigned code_size = 4; //in steps
 	
 	const char* input_file_name = argv[1];
@@ -85,7 +85,6 @@ int main(int argc, char** argv)
 			
 			debug(", current state is " << int(encoder.state()) << std::endl);
 			debug("\tOutputting " << block_size << " bits\n");
-			signal = 0;
 			obitstream::put(bos, signal, block_size);
 		}
 		
@@ -95,6 +94,8 @@ int main(int argc, char** argv)
 		debug("\tOutputting " << block_size << " bits\n");
 		obitstream::put(bos, signal, block_size);
 	}
+	
+	bos.flush();
 	
 	return 0;
 }

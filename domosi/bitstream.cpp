@@ -1,5 +1,8 @@
 #include "bitstream.h"
 
+//#define debug(msg) {std::cout << msg;}
+#define debug(msg) {}
+
 //=============================================================================================
 //ibitstream
 
@@ -48,6 +51,8 @@ const std::istream& ibitstream::istream() const {
 //obitstream
 
 void obitstream::put(bool v) {
+	debug("obitstream::put(" << v << ")\n");
+	
 	m_ReserveData = (m_ReserveData | (v<<7));
 	m_ReserveCount++;
 	
@@ -58,6 +63,8 @@ void obitstream::put(bool v) {
 }
 
 void obitstream::put(const char* data, size_t bit_count) {
+	debug("obitstream::put(" << (void*)data << ", " << bit_count << ")\n");
+	
 	for(size_t i=0; i<bit_count; i++) {
 		size_t byte_id = i/8;
 		size_t bit_id = i%8;
@@ -67,6 +74,8 @@ void obitstream::put(const char* data, size_t bit_count) {
 }
 
 void obitstream::flush() {
+	debug("obitstream::flush()\n");
+	
 	m_OutputStream->put(m_ReserveData);
 	m_ReserveCount = 0;
 }

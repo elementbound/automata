@@ -17,7 +17,9 @@ class ibitstream
 		void get(char* data, size_t bit_count);
 		
 		template <typename T>
-		void get(T& data, size_t bit_count = sizeof(T)) {this->get((char*)&data, bit_count);}
+		static void get(ibitstream& is, T& data, size_t bit_count = sizeof(T)) {
+			is.get((char*)&data, bit_count);
+		}
 		
 		void 				istream(std::istream*);
 		std::istream& 		istream();
@@ -33,11 +35,13 @@ class obitstream
 		uint8_t m_ReserveCount = 0;
 		
 	public: 
+		template <typename T>
+		static void put(obitstream& os, const T& data, size_t bit_count = sizeof(T)) {
+			os.put((char*)&data, bit_count);
+		}
+	
 		void put(bool);
 		void put(const char* data, size_t bit_count);
-		
-		template <typename T>
-		void put(const T& data, size_t bit_count = sizeof(T)) {this->put((char*)&data, bit_count);}
 		
 		void flush();
 		

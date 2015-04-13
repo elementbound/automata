@@ -53,11 +53,12 @@ int main(int argc, char** argv)
 	
 	while(1)
 	{
-		signal_t signal;
+		signal_t signal = 0;
 		
 		for(int i=0; i<code_size; i++)
 		{
-			bis.get(signal, block_size);
+			signal = 0;
+			ibitstream::get(bis, signal, block_size);
 			encoder.signal(signal);
 		}
 		
@@ -66,7 +67,7 @@ int main(int argc, char** argv)
 		if(!fis) 
 			break;
 		
-		bos.put(encoder.state(), block_size);
+		obitstream::put(bos, encoder.state(), block_size);
 	}
 	
 	return 0;

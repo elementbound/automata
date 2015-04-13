@@ -1,4 +1,5 @@
 #include "grid.h"
+#include <cassert>
 
 void grid::resize(unsigned w, unsigned h)
 {
@@ -7,8 +8,8 @@ void grid::resize(unsigned w, unsigned h)
 	m_Data.resize(m_Width*m_Height);
 }
 
-unsigned& grid::get(unsigned x, unsigned y) { return m_Data[y*m_Width + x]; }  
-const unsigned& grid::get(unsigned x, unsigned y) const { return m_Data[y*m_Width + x]; } 
+unsigned& grid::get(unsigned x, unsigned y) { assert(x < m_Width && y < m_Height); return m_Data[y*m_Width + x]; }  
+const unsigned& grid::get(unsigned x, unsigned y) const { assert(x < m_Width && y < m_Height); return m_Data[y*m_Width + x]; } 
 unsigned& grid::operator()(unsigned x, unsigned y) { return this->get(x,y); }
 const unsigned& grid::operator()(unsigned x, unsigned y) const { return this->get(x,y); } 
 

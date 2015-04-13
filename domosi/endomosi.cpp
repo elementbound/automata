@@ -66,9 +66,10 @@ int main(int argc, char** argv)
 	
 	while(1)
 	{
-		signal_t signal;
-		state_t input;
-			bis.get(input, block_size);
+		signal_t signal = 0;
+		state_t input = 0;
+			debug("Getting " << block_size << " bits of input... \n");
+			ibitstream::get(bis, input, block_size);
 		
 		//Ran out of bytes, stop encoding
 		if(!fis) 
@@ -79,16 +80,20 @@ int main(int argc, char** argv)
 		for(unsigned i=0; i < code_size-1; i++)
 		{
 			signal = rng() % signal_count;
+			debug("\tGot signal#" << int(signal)); 
 			encoder.signal(signal);
 			
-			debug("\tGot signal#" << int(signal) << ", current state is " << int(encoder.state()) << std::endl);
-			bos.put(signal, block_size);
+			debug(", current state is " << int(encoder.state()) << std::endl);
+			debug("\tOutputting " << block_size << " bits\n");
+			signal = 0;
+			obitstream::put(bos, signal, block_size);
 		}
 		
 		signal = reverse_lookup_table(encoder.state(), input);
 		encoder.signal(signal);
 		debug("\tFound signal#" << int(signal) << ", current state is " << int(encoder.state()) << std::endl);
-		bos.put(signal, block_size);
+		debug("\tOutputting " << block_size << " bits\n");
+		obitstream::put(bos, signal, block_size);
 	}
 	
 	return 0;

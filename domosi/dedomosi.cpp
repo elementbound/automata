@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <random>
-#include <cstdlib> //exit
+#include <cstdlib> //exit, atoi
 #include <cstdint> //uintmax_t
 #include "automata.h"
 #include "bitstream.h"
@@ -15,16 +15,16 @@ typedef uintmax_t state_t;
 
 int main(int argc, char** argv)
 {
-	if(argc < 3)
-		die("Usage: " << argv[0] << " <input file> <output file>");
+	if(argc < 6)
+		die("Usage: " << argv[0] << " <input file> <output file> <seed> <block size> <code size>");
 
 	const char* input_file_name = argv[1];
 	const char* output_file_name = argv[2];
 	
-	//
+	unsigned seed = atoi(argv[3]);
 	
-	unsigned block_size = 4; //in bits
-	unsigned code_size = 4; //in steps
+	unsigned block_size = atoi(argv[4]); //in bits
+	unsigned code_size = atoi(argv[5]); //in steps
 	
 	//
 	
@@ -36,6 +36,12 @@ int main(int argc, char** argv)
 	if(!fos)
 		die("Couldn't open output file: " << output_file_name);
 	
+	if(block_size > 30)
+		std::cerr << "Warning: block size greater than 30, this might cause issues\n";
+	
+	if((block_size*code_size)%8)
+		std::cerr << "Output unit size is not a multiple of 8, padding bits could result in garbage characters in decoded file\n";
+	
 	ibitstream bis; bis.istream(&fis);
 	obitstream bos; bos.ostream(&fos);
 	
@@ -44,7 +50,7 @@ int main(int argc, char** argv)
 	automata encoder;
 	unsigned signal_count = 1 << block_size; // = std::pow(2, 8*output_block_size)
 	std::mt19937 rng;
-	rng.seed(0);
+	rng.seed(seed);
 	
 	debug("Generating a " << signal_count << " latin square... ");
 	encoder.transitions() = generate_latin_square(signal_count, rng); 

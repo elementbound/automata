@@ -10,9 +10,9 @@ build:
 	g++ bin/grid.o bin/automata.o bin/bitstream.o bin/dedomosi.o -o dedomosi
 	
 test: build
-	endomosi ../lipsum.txt en.txt
-	dedomosi en.txt de.txt
+	endomosi ../lipsum.txt en.txt 0 8 4
+	dedomosi en.txt de.txt 0 8 4
 	
 test_min: build
-	endomosi ../min.txt en.txt
-	dedomosi en.txt de.txt
+	endomosi ../min.txt en.txt 0 4 4
+	dedomosi en.txt de.txt 0 4 4

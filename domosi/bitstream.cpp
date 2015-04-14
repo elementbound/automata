@@ -75,9 +75,12 @@ void obitstream::put(const char* data, size_t bit_count) {
 
 void obitstream::flush() {
 	debug("obitstream::flush()\n");
+	if(!m_ReserveCount)
+		return;
 	
 	m_OutputStream->put(m_ReserveData);
 	m_ReserveCount = 0;
+	m_ReserveData = 0;
 }
 
 void obitstream::ostream(std::ostream* os) {

@@ -7,8 +7,8 @@
 #include "bitstream.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
-#define debug(msg) {std::cout << msg;}
-//#define debug(msg) {}
+//#define debug(msg) {std::cout << msg;}
+#define debug(msg) {}
 
 typedef uintmax_t signal_t;
 typedef uintmax_t state_t;
@@ -65,13 +65,13 @@ int main(int argc, char** argv)
 			debug("\tGot signal " << signal << ", current state is " << encoder.state() << '\n');
 		}
 		
-		debug("\tOutputting " << encoder.state() << '\n');
-		obitstream::put(bos, encoder.state(), block_size);
-		
 		//In the previous loop fis might become invalid; 
 		//stop decoding, ran out of input
 		if(!fis) 
 			break;
+		
+		debug("\tOutputting " << encoder.state() << '\n');
+		obitstream::put(bos, encoder.state(), block_size);
 	}
 	
 	bos.flush();

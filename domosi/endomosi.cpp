@@ -7,8 +7,8 @@
 #include "bitstream.h"
 
 #define die(msg) {std::cerr << msg << '\n'; exit(1);}
-#define debug(msg) {std::cout << msg;}
-//#define debug(msg) {}
+//#define debug(msg) {std::cout << msg;}
+#define debug(msg) {}
 
 typedef uintmax_t signal_t;
 typedef uintmax_t state_t;

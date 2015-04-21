@@ -14,7 +14,7 @@ int main()
 	std::fill(universe[0].begin(), universe[0].end(), 0);
 	std::fill(universe[1].begin(), universe[1].end(), 0);
 	
-	//universe[0][0] = 1;
+	universe[0][0] = 1;
 	
 	std::copy(universe[0].begin(), universe[0].end(), std::ostream_iterator<int>(std::cout, " "));
 		std::cout << std::endl;
@@ -24,7 +24,7 @@ int main()
 		for(unsigned i=0; i<universe[0].size(); i++)
 		{
 			int left, mid, right, out;
-			left = (i-1 >= 0) ? universe[0][i-1] : 0;
+			left = (i!=0) ? universe[0][i-1] : 0;
 			mid = universe[0][i];
 			right = (i+1 < universe[0].size()) ? universe[0][i+1] : 0;
 			
@@ -40,7 +40,7 @@ int main()
 				if(mid == universe_size && right == 0)
 					out = mid-1;
 				else if(mid == left || mid == right)
-					out = mid -1;
+					out = mid-1;
 			}
 			
 			universe[1][i] = out;

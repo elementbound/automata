@@ -2,6 +2,9 @@
 #include <string>
 #include <map>
 
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 template <typename T>
 class tape { 
 	private:
@@ -77,7 +80,8 @@ class substringAutomata {
 
 		//
 
-		static const operation_t OP_SEARCH	= 1;
+		static const operation_t OP_SEARCH		= 1;
+		static const operation_t OP_PRINT_MATCH	= 2;
 
 		//
 
@@ -104,6 +108,12 @@ typedef substringAutomata::suboperation_t	suboperation_t;
 typedef substringAutomata::state_t			state_t;
 
 const operation_t substringAutomata::OP_SEARCH;
+const operation_t substringAutomata::OP_PRINT_MATCH;
+
+void bold(bool on) {
+	HANDLE std_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(std_handle, (on ? 0 : FOREGROUND_RED) | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
 
 void substringAutomata::init() {
 	tapeHaystack.defaultValue = {'\0', SYMBOL_REGULAR};
@@ -130,8 +140,13 @@ bool substringAutomata::step() {
 			break;
 
 			case 1: 
-				if(tapeNeedle.read() == tapeNeedle.defaultValue)
-					state = terminateState;
+				if(tapeNeedle.read() == tapeNeedle.defaultValue) { //Full match
+					tapeNeedle.rewind();
+					tapeHaystack.rewind();
+					tapeIndicator.rewind();
+
+					state = {OP_PRINT_MATCH, 0};
+				}
 				else if(tapeHaystack.read() == tapeNeedle.read()) {
 					tapeIndicator.write({IND_OCCURENCE, SYMBOL_INDICATOR});
 
@@ -143,6 +158,27 @@ bool substringAutomata::step() {
 					state = terminateState;
 			break;
 		}
+	}
+	else if(state.first == OP_PRINT_MATCH) {
+		switch(tapeIndicator.read().value) {
+			case IND_TERMINATE:
+				state = terminateState;
+			break;
+
+			case IND_EMPTY:
+				tapeOutput.write({tapeHaystack.read().value, SYMBOL_REGULAR});
+				tapeOutput.step(1);
+			break;
+
+			case IND_FIRST_OCCURENCE:
+			case IND_OCCURENCE:
+				tapeOutput.write({tapeHaystack.read().value, SYMBOL_OCCURENCE});
+				tapeOutput.step(1);
+			break;
+		}
+
+		tapeHaystack.step(1);
+		tapeIndicator.step(1);
 	}
 
 	return state != terminateState;
@@ -172,7 +208,9 @@ void substringAutomata::print_tape(tape<symbol_t>& t, bool pos_indicator) {
 			break;
 
 			case SYMBOL_OCCURENCE:
+				bold(true);
 				std::cout << s.value;
+				bold(false);
 			break;
 		}
 
@@ -234,6 +272,10 @@ int main()
 
 		std::cout << "Indicator: \n";
 		automata.print_tape(automata.tapeIndicator); 
+		std::cout << '\n';
+
+		std::cout << "Output: \n";
+		automata.print_tape(automata.tapeOutput); 
 		std::cout << '\n';
 
 		std::cout << "=== === === ===\n";

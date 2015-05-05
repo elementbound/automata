@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+#include <cstdlib> //system
+
 template <typename T>
 class tape { 
 	private:
@@ -113,6 +115,14 @@ const operation_t substringAutomata::OP_PRINT_MATCH;
 void bold(bool on) {
 	HANDLE std_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(std_handle, (on ? 0 : FOREGROUND_RED) | FOREGROUND_GREEN | FOREGROUND_BLUE);
+}
+
+void clrscr() {
+	system("cls");
+}
+
+void sleep(int time) {
+	Sleep(time);
 }
 
 void substringAutomata::init() {
@@ -262,6 +272,8 @@ int main()
 	//Print?
 	do
 	{
+		clrscr();
+
 		std::cout << "Haystack: \n";
 		automata.print_tape(automata.tapeHaystack); 
 		std::cout << '\n';
@@ -275,10 +287,12 @@ int main()
 		std::cout << '\n';
 
 		std::cout << "Output: \n";
-		automata.print_tape(automata.tapeOutput); 
+		automata.print_tape(automata.tapeOutput, false); 
 		std::cout << '\n';
 
 		std::cout << "=== === === ===\n";
+
+		sleep(250);
 	}
 	while(automata.step());
 

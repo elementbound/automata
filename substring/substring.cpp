@@ -84,6 +84,7 @@ class substringAutomata {
 
 		static const operation_t OP_SEARCH		= 1;
 		static const operation_t OP_PRINT_MATCH	= 2;
+		static const operation_t OP_REWIND_IND	= 3;
 
 		//
 
@@ -111,6 +112,7 @@ typedef substringAutomata::state_t			state_t;
 
 const operation_t substringAutomata::OP_SEARCH;
 const operation_t substringAutomata::OP_PRINT_MATCH;
+const operation_t substringAutomata::OP_REWIND_IND;
 
 void bold(bool on) {
 	HANDLE std_handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -145,7 +147,15 @@ bool substringAutomata::step() {
 					state.second++;
 				}
 				else {
-					state = terminateState;
+					if(tapeHaystack.read() == tapeHaystack.defaultValue)
+						state = terminateState;
+					else {
+						tapeHaystack.step(1);
+						tapeIndicator.step(1);
+						tapeNeedle.rewind();
+
+						state = {OP_SEARCH, 0};
+					}
 				}
 			break;
 
@@ -164,31 +174,66 @@ bool substringAutomata::step() {
 					tapeHaystack.step(1);
 					tapeNeedle.step(1);
 				}
-				else 
-					state = terminateState;
+				else {
+					if(tapeHaystack.read() == tapeHaystack.defaultValue)
+						state = terminateState;
+					else {
+						tapeHaystack.step(1);
+						tapeIndicator.step(1);
+						tapeNeedle.rewind();
+
+						state = {OP_SEARCH, 0};
+					}
+				}
 			break;
 		}
 	}
 	else if(state.first == OP_PRINT_MATCH) {
 		switch(tapeIndicator.read().value) {
 			case IND_TERMINATE:
-				state = terminateState;
+				tapeHaystack.step(-1);
+				tapeIndicator.step(-1);
+
+				tapeOutput.write({'\n', SYMBOL_REGULAR});
+				tapeOutput.step(1);
+
+				state = {OP_REWIND_IND, 0};
 			break;
 
 			case IND_EMPTY:
 				tapeOutput.write({tapeHaystack.read().value, SYMBOL_REGULAR});
 				tapeOutput.step(1);
+
+				tapeHaystack.step(1);
+				tapeIndicator.step(1);
 			break;
 
 			case IND_FIRST_OCCURENCE:
 			case IND_OCCURENCE:
 				tapeOutput.write({tapeHaystack.read().value, SYMBOL_OCCURENCE});
 				tapeOutput.step(1);
+
+				tapeHaystack.step(1);
+				tapeIndicator.step(1);
 			break;
 		}
+	}
+	else if(state.first == OP_REWIND_IND)
+	{
+		if(tapeIndicator.read().value == IND_FIRST_OCCURENCE) {
+			tapeIndicator.write({IND_EMPTY, SYMBOL_INDICATOR});
 
-		tapeHaystack.step(1);
-		tapeIndicator.step(1);
+			tapeHaystack.step(1);
+			tapeIndicator.step(1);
+
+			state = {OP_SEARCH, 0};
+		}
+		else {
+			tapeIndicator.write({IND_EMPTY, SYMBOL_INDICATOR});
+
+			tapeHaystack.step(-1);
+			tapeIndicator.step(-1);
+		}
 	}
 
 	return state != terminateState;
@@ -247,8 +292,8 @@ int main()
 	substringAutomata automata;
 	automata.init();
 
-	std::string haystack = "bababa";
-	std::string needle = "baba";
+	std::string haystack = "mamamia";
+	std::string needle = "mam";
 
 	//Fill tapes
 	for(char c : haystack) {
@@ -273,6 +318,8 @@ int main()
 	do
 	{
 		clrscr();
+
+		std::cout << "State: " << automata.state.first << ", " << automata.state.second << "\n\n";
 
 		std::cout << "Haystack: \n";
 		automata.print_tape(automata.tapeHaystack); 

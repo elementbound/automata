@@ -178,11 +178,9 @@ bool substringAutomata::step() {
 					if(tapeHaystack.read() == tapeHaystack.defaultValue)
 						state = terminateState;
 					else {
-						tapeHaystack.step(1);
-						tapeIndicator.step(1);
 						tapeNeedle.rewind();
 
-						state = {OP_SEARCH, 0};
+						state = {OP_REWIND_IND, 0};
 					}
 				}
 			break;
@@ -292,7 +290,7 @@ int main()
 	substringAutomata automata;
 	automata.init();
 
-	std::string haystack = "mamamia";
+	std::string haystack = "mamamiamamamamaamamia";
 	std::string needle = "mam";
 
 	//Fill tapes
@@ -339,7 +337,7 @@ int main()
 
 		std::cout << "=== === === ===\n";
 
-		sleep(250);
+		sleep(25);
 	}
 	while(automata.step());
 
